@@ -160,12 +160,8 @@ class KaraokePlayer {
         this.lyricsLocation = document.querySelector('.lyrics-location');
         this.lyricsGenre = document.querySelector('.lyrics-genre');
 
-        this.playBtn = document.querySelector('.play-btn');
-        this.statusDisplay = document.querySelector('.status-display');
-        this.volumeSlider = document.querySelector('.volume-slider');
-        this.volumeDisplay = document.querySelector('.volume-display');
+        this.statusMessage = document.querySelector('.status-message');
         this.karaokeBtn = document.querySelector('.load-karaoke-btn');
-        this.audioControls = document.querySelector('.audio-controls');
 
         this.songTitle = document.querySelector('.song-title');
         this.songArtist = document.querySelector('.song-artist');
@@ -178,6 +174,7 @@ class KaraokePlayer {
         this.pausedTime = 0;
         this.currentSyllableIndex = 0;
         this.animationFrame = null;
+        this.karaokeLoaded = false;
         
         // Content data
         this.currentSong = null;
@@ -197,7 +194,7 @@ class KaraokePlayer {
         
         // Configuration
         this.availableSongs = ['dancing-queen', 'oops-i-did-it-again', 'call-me-maybe'];
-        this.availableLyrics = ['against-damaro-1', 'against-damaro-2', 'curse-against-theagenes-and-other-cooks', 'curse-on-the-murderers-of-heraklea-and-marthine', 'curses-from-the-temple-of-demeter-at-knidos-1', 'curses-from-the-temple-of-demeter-at-knidos-2', 'curses-from-the-temple-of-demeter-at-knidos-3', 'docimedis', 'oropos', 'thetima-dionysophon', 'tretia-maria', 'vilbia', 'maqlu'];
+        this.availableLyrics = ['against-damaro-I', 'against-damaro-II', 'curse-against-theagenes-and-other-cooks', 'curse-on-the-murderers-of-heraklea-and-marthine', 'curses-from-the-temple-of-demeter-at-knidos-I', 'curses-from-the-temple-of-demeter-at-knidos-II', 'curses-from-the-temple-of-demeter-at-knidos-III', 'docimedis', 'oropos', 'thetima-dionysophon', 'tretia-maria', 'vilbia', 'maqlu'];
         this.availableImages = ["Roman_baths_2014_57.jpg", "Roman_baths_2014_58.jpg", "Roman_baths_2014_60.jpg", "Roman_baths_2014_61.jpg"];
         this.availableAnimations = ['spin-horizontal-3d', 'spin-vertical-3d', 'squish-upwards'];
         
@@ -207,25 +204,18 @@ class KaraokePlayer {
     init() {
         this.initializeEventListeners();
         this.loadAvailableContent();
-        this.setRandomBackground();
     }
 
     initializeEventListeners() {
         this.songSelect.addEventListener('change', (e) => {
             this.updateKaraokeButton();
+            this.handleSelectionChange();
         });
 
         this.lyricsSelect.addEventListener('change', (e) => {
             this.showLyricsInfo(e.target.value);
             this.updateKaraokeButton();
-        });
-
-        this.volumeSlider.addEventListener('input', (e) => {
-            const volume = e.target.value;
-            this.volumeDisplay.textContent = `${volume}%`;
-            if (this.audioElement) {
-                this.audioElement.volume = volume / 100;
-            }
+            this.handleSelectionChange();
         });
 
     }
@@ -314,8 +304,14 @@ class KaraokePlayer {
         
         if (songSelected && lyricsSelected) {
             this.karaokeBtn.style.display = 'block';
+            if (!this.karaokeLoaded) {
+                const root = document.documentElement;
+                root.style.setProperty('--h2-text-color', 'var(--text-color)');
+                root.style.setProperty('--h2-shadow-color', 'var(--shadow-color)');
+                this.karaokeBtn.querySelector('h2').textContent = '🎤 Start Karaoke';
+            }
         } else {
-            this.karaokeBtn.style.display = 'none';
+            this.karaokeLoaded = false;
         }
     }
 
@@ -325,11 +321,12 @@ class KaraokePlayer {
         
         if (!songId || !lyricsId) {
             this.updateStatus('Error: Please select both instrumental and lyrics');
-            return;
+            return false;
         }
 
         try {
             this.updateStatus('Loading karaoke...');
+            this.setRandomBackground();
             
             // Get already loaded data
             this.currentSong = this.songsData.songs.find(song => song.id === songId);
@@ -337,7 +334,7 @@ class KaraokePlayer {
             
             if (!this.currentSong || !this.currentLyrics) {
                 this.updateStatus('Error: Could not find selected content');
-                return;
+                return false;
             }
             
             // Update BPM and rhythm pattern from song data
@@ -353,13 +350,14 @@ class KaraokePlayer {
             // Setup audio
             this.setupAudio();
             
-            // Show audio controls
-            this.audioControls.style.display = 'block';
             
+            this.karaokeLoaded = true;
             this.updateStatus(`Ready: ${this.currentLyrics.title} with ${this.currentSong.title}`);
+            return true;
         } catch (error) {
             console.error('Error loading karaoke:', error);
             this.updateStatus(`Error: Could not load selected combination`);
+            return false;
         }
     }
 
@@ -372,7 +370,6 @@ class KaraokePlayer {
         this.audioElement = new Audio();
         this.audioElement.src = this.currentSong.audioFile;
         this.audioElement.preload = 'auto';
-        this.audioElement.volume = this.volumeSlider.value / 100;
 
         this.audioElement.addEventListener('loadedmetadata', () => {
             this.updateStatus(`Audio loaded: ${this.currentSong.title}`);
@@ -564,16 +561,6 @@ class KaraokePlayer {
         this.timings = this.currentStringTimings;
     }
 
-    updateTimings() {
-        // This method is now handled by displayCurrentLyricsString
-        // Keep for compatibility but functionality moved
-    }
-
-    updateTotalTime() {
-        // No longer needed since timeline display was removed
-        // Background saturation is handled in updateBackgroundSaturation()
-    }
-
     togglePlayback() {
         if (this.isPlaying) {
             this.pausePlayback();
@@ -606,7 +593,7 @@ class KaraokePlayer {
             }
         }
 
-        this.playBtn.innerHTML = '⏸️ Pause';
+        this.karaokeBtn.querySelector('h2').textContent = 'Pause';
         this.updateStatus('Playing...');
         this.animate();
     }
@@ -620,7 +607,7 @@ class KaraokePlayer {
             this.audioElement.pause();
         }
         
-        this.playBtn.innerHTML = '▶️ Play';
+        this.karaokeBtn.querySelector('h2').textContent = 'Play';
         this.updateStatus('Paused');
         
         if (this.animationFrame) {
@@ -639,7 +626,9 @@ class KaraokePlayer {
             this.audioElement.currentTime = 0;
         }
         
-        this.playBtn.innerHTML = '▶️ Play';
+        if (this.karaokeLoaded) {
+            this.karaokeBtn.querySelector('h2').textContent = 'Play';
+        }
         this.updateStatus('Stopped');
         
         if (this.animationFrame) {
@@ -853,7 +842,7 @@ class KaraokePlayer {
     }
 
     updateStatus(message) {
-        this.statusDisplay.textContent = `Status: ${message}`;
+        this.statusMessage.textContent = `${message}`;
     }
 
     setRandomBackground() {
@@ -942,12 +931,35 @@ class KaraokePlayer {
             console.warn('No background element found');
         }
     }
+
+    async handleSelectionChange() {
+        // If karaoke is already loaded and playing, and selections change, auto-load new pairing
+        if (this.karaokeLoaded && this.songSelect.value && this.lyricsSelect.value) {
+            const success = await this.loadKaraoke();
+            if (success) {
+                this.startPlayback();
+            }
+        }
+    }
 }
 
 const player = new KaraokePlayer();
 
 function loadKaraoke() {
     player.loadKaraoke();
+}
+
+async function handleKaraokeButton() {
+    if (!player.karaokeLoaded) {
+        // First time: load karaoke and start playback
+        const success = await player.loadKaraoke();
+        if (success) {
+            player.startPlayback();
+        }
+    } else {
+        // Already loaded: just toggle playback
+        player.togglePlayback();
+    }
 }
 
 function togglePlayback() {

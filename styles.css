@@ -1,6 +1,10 @@
 :root {
     --text-color: #666666;
     --shadow-color: rgba(245,245,245,0.5);
+
+    --h2-text-color: #666666;
+    --h2-shadow-color: rgba(245,245,245,0.5);
+
     --curse-text-color: rgba(255, 0, 0, 0.77);
     --curse-shadow-color: #730000;
     --blessing-text-color: rgba(0, 0, 255, 0.77);
@@ -13,31 +17,75 @@
     box-sizing: border-box;
 }
 
+@font-face {
+    font-family: 'hershey';
+    src: url('fonts/Hershey-1000-fixed.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 body {
-    font-family: 'Fira Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'hershey', monospace;
+    line-height:1em;
+    background: green;
     min-height: 100vh;
     color: white;
     font-size:20px;
 }
 
 .container {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     height:100vh;
 }
 
-/* TYPOGRAPHY */
-p, h1, h2, h3, h4, h5, h6 {
-    font-size:1em;
+/* borders and padding */
+.controls-panel, .info, .info div, .controls-panel div, input, select, textarea, button, option {
+    border: 2px solid white;
+    padding: 1em;
+}
 
-  background-color: var(--shadow-color);
-  color: transparent;
-  text-shadow: 0px 3px 1.5px var(--text-color);
-  -webkit-background-clip: text;
+
+/* TYPOGRAPHY */
+h1, h2  {
+    color: transparent;
+    -webkit-background-clip: text;
     -moz-background-clip: text;
     background-clip: text;
+}
+
+
+h1 {
+    background-color: var(--shadow-color);
+    text-shadow: 2px 4px 1.5px var(--text-color);
+}
+
+h2 {
+    background-color: var(--h2-shadow-color);
+    text-shadow: 2px 4px 1.5px var(--h2-text-color);
+}
+
+h1, .lyrics-container, .bouncing-ball {
+    font-size: 2.5em;
+    line-height: 2em;
+}
+
+.bouncing-ball {
+    line-height:1em;
+}
+
+h2 {
+    font-size:1.8em;
+    line-height:1.4em;
+}
+
+h4 {
+    font-size:.75em;
+
+    display: block;
+    padding: 0 0 1em 0;
+}
+
+.hidden {
+    display: none;
 }
 
 /* LYRICS */
@@ -45,8 +93,6 @@ p, h1, h2, h3, h4, h5, h6 {
     background: rgba(0, 0, 0, 0.3);
     padding: 1em;
     height:75%;
-    font-size: 2.5em;
-    line-height: 2;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -57,16 +103,9 @@ p, h1, h2, h3, h4, h5, h6 {
     align-items: center;
 }
 
-.hidden {
-    display: none;
+.help {
+    max-width:1000px;
 }
-
-
-.load-karaoke-btn {
-    font-size: inherit; /* Inherit the 2.5em from .lyrics-display */
-    background: transparent; /* Remove default button background */
-}
-
 
 .lyrics-background {
     position: absolute;
@@ -128,8 +167,6 @@ p, h1, h2, h3, h4, h5, h6 {
     left: 0;
     width: 1em;
     height: 1em;
-    font-size: 1em;
-    line-height: 1;
     z-index: 10;
     opacity: 0;
     transform: translateX(-50%);
@@ -169,11 +206,11 @@ p, h1, h2, h3, h4, h5, h6 {
     }
 }
 
-/* STATUS */
-.status-display {
+/* INFO */
+.info {
     position:fixed;
-    left:0;
-    top:0;
+    left:1em;
+    top:1em;
 }
 
 /* CONTROLS */
@@ -181,24 +218,23 @@ p, h1, h2, h3, h4, h5, h6 {
     height:25%;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    gap: 10px;
 }
 
-.controls-panel, .control-group, label, input, select, textarea, button {
-    padding: 1em;
-    border: 1px solid white;
-}
-
-label {
-    display: block;
+.controls-panel, .control-group, label, input, select, textarea, button, option {
+    color:inherit;
+    font-size: inherit;
+    font-family:inherit;
+    line-height:inherit;
+    background: transparent;
 }
 
 input, select, textarea {
     width: 100%;
-    background: rgba(255, 255, 255, 0.9);
 }
 
 button {
+    display:block;
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -214,17 +250,6 @@ button:disabled {
     transform: none;
 }
 
-.playback-controls {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.playback-controls button {
-    flex: 1;
-    min-width: 80px;
-}
-
 .audio-controls {
     margin-top: 15px;
 }
@@ -235,7 +260,6 @@ button:disabled {
 }
 
 .volume-display {
-    font-family: monospace;
     color: #fff;
 }
 

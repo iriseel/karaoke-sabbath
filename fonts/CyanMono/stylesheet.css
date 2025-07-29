@@ -1,0 +1,59 @@
+/*
+ *
+ * INSTRUCTIONS
+ *
+ * Copy the Legal Disclaimer and the @font-faces statements to your regular CSS file.
+ * The font file(s) should be placed relative to the regular CSS file.
+ *
+ */
+
+/*
+ * Legal Disclaimer for Trial Licence licence
+ *
+ * Trial Licence
+ *
+ * Trial Web License for evaluation, testing and presentation purposes on internal domains without public access only.
+ * 
+ * The font files may not be distributed, published or used on any other domain(s).
+ * 
+ * Any further use is strictly prohibited.
+ *
+ * For internal test and presentation use only.
+ * For both print use and web / electronic use on internal domains without public access. Licencee may create documents / visuals / web pages etc. for the purpose of evaluation and presentation to clients or other interested parties.
+ * Any further use is strictly prohibited. The font files may not be distributed, published or used on any other domain(s).
+ *
+ */
+
+/* complete */
+
+@font-face {
+  font-family: "CyanMonoLLTrialWeb-Light";
+  src: url("CyanMonoLLTrialWeb-Light.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CyanMonoLLTrialWeb-LightItalic";
+  src: url("CyanMonoLLTrialWeb-LightItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CyanMonoLLTrialWeb-Regular";
+  src: url("CyanMonoLLTrialWeb-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CyanMonoLLTrialWeb-Italic";
+  src: url("CyanMonoLLTrialWeb-Italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CyanMonoLLTrialWeb-Medium";
+  src: url("CyanMonoLLTrialWeb-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CyanMonoLLTrialWeb-MediumItalic";
+  src: url("CyanMonoLLTrialWeb-MediumItalic.woff2") format("woff2");
+}
+
+

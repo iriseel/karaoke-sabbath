@@ -10,32 +10,38 @@
     <div class="container">
         <div class="lyrics-display">
             <div class="lyrics-info">
-                <h4 class="help">Select an instrumental track and lyrics to begin karaoke...</h4>
+                <h1 class="help">Select an instrumental track and lyrics to begin karaoke...</h1>
                 <div class="lyrics-details hidden">
-                    <h4 class="lyrics-title">Song Title</h4>
-                    <p><strong>Date:</strong> <span class="lyrics-date">Date</span></p>
-                    <p><strong>Location:</strong> <span class="lyrics-location">Location</span></p>
-                    <p><strong>Genre:</strong> <span class="lyrics-genre">Genre</span></p>
+                    <h1 class="lyrics-title">Song Title</h1>
+                    <h1>Date: <span class="lyrics-date">Date</span></h1>
+                    <h1>Location: <span class="lyrics-location">Location</span></h1>
+                    <h1>Genre: <span class="lyrics-genre">Genre</span></h1>
                 </div>
             </div>
-
-                
-            <button onclick="loadKaraoke()" class="load-karaoke-btn" style="display: none;">
-                <h1>
-                    🎤 Start Karaoke
-                </h1>
-            </button>
 
             <div class="lyrics-background"></div>
         </div>
 
-        <div class="status-display">
-            Status: Ready - Select instrumental and lyrics to begin
+        <div class="info">
+            <div class="status-display">
+                <h4 class="status-caption">
+                    Status
+                </h4>
+                <div class="status-message">
+                    Ready - Select instrumental and lyrics to begin
+                </div>
+            </div>
+                <button onclick="testBackgroundAnimation()">Test Animation</button>
+                <button onclick="testBackgroundChange()">Change BG</button>
         </div>
 
         <div class="controls-panel">
             <div class="control-group">
-                <label for="songSelect">Choose Instrumental:</label>
+                <label for="songSelect">
+                    <h4>
+                        Instrumental
+                    </h4>
+                </label>
                 <select class="song-select">
                     <option value="">-- Select Instrumental --</option>
                 </select>
@@ -43,27 +49,25 @@
             </div>
 
             <div class="control-group">
-                <label for="lyricsSelect">Choose Lyrics:</label>
+                <label for="lyricsSelect">
+                    <h4>
+                        Lyrics
+                    </h4>
+                </label>
                 <select class="lyrics-select">
                     <option value="">-- Select Lyrics --</option>
                 </select>
             </div>
 
-            <div class="control-group">
-                <div class="playback-controls">
-                    <button class="play-btn" onclick="togglePlayback()">▶️ Play</button>
-                    <button onclick="stopPlayback()">⏹️ Stop</button>
-                    <button onclick="resetPlayback()">🔄 Reset</button>
-                    <button onclick="testBackgroundAnimation()">🎨 Test Animation</button>
-                    <button onclick="testBackgroundChange()">🖼️ Change BG</button>
-                </div>
-                <div class="audio-controls" style="display: none;">
-                    <label>Audio Volume:</label>
-                    <input type="range" class="volume-slider" min="0" max="100" value="70">
-                    <span class="volume-display">70%</span>
-                </div>
-                
-            </div>
+            <!-- <div class="control-group"> -->
+                <button onclick="handleKaraokeButton()" class="load-karaoke-btn">
+                    <h2>
+                        Choose song and lyrics
+                    </h2>
+                </button>
+
+                <!-- <button onclick="resetPlayback()">Reset</button> -->
+            <!-- </div> -->
         </div>
     </div>
 

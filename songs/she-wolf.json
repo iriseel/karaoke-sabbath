@@ -1,0 +1,9 @@
+{
+  "id": "she-wolf",
+  "title": "She Wolf",
+  "artist": "Shakira",
+  "bpm": 122,
+  "audioFile": "audio/She-Wolf.mp3",
+  "rhythmPattern": "basic",
+  "delay": 22000
+}

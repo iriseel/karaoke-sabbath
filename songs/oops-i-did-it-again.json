@@ -1,0 +1,9 @@
+{
+  "id": "oops-i-did-it-again",
+  "title": "Oops!... I Did It Again",
+  "artist": "Britney Spears",
+  "bpm": 95,
+  "audioFile": "audio/oops-i-did-it-again.wav",
+  "rhythmPattern": "basic",
+  "delay": 25000
+}

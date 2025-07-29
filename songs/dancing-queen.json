@@ -1,0 +1,9 @@
+{
+  "id": "dancing-queen",
+  "title": "Dancing Queen",
+  "artist": "ABBA",
+  "bpm": 101,
+  "audioFile": "audio/dancing-queen.wav",
+  "rhythmPattern": "mixed",
+  "delay": 0
+}

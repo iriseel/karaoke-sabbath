@@ -1,0 +1,9 @@
+{
+  "id": "call-me-maybe",
+  "title": "Call Me Maybe",
+  "artist": "Carly Rae Jepsen",
+  "bpm": 120,
+  "audioFile": "audio/Call-Me-Maybe.wav",
+  "rhythmPattern": "basic",
+  "delay": 5000
+}

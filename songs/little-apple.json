@@ -1,0 +1,9 @@
+{
+  "id": "little-apple",
+  "title": "Little Apple (小苹果)",
+  "artist": "Chopstick Brothers (筷子兄弟)",
+  "bpm": 120,
+  "audioFile": "audio/Little-Apple.wav",
+  "rhythmPattern": "basic",
+  "delay": 16000
+}

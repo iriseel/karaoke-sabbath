@@ -1,0 +1,9 @@
+{
+  "id": "APT",
+  "title": "APT",
+  "artist": "ROSÉ & Bruno Mars",
+  "bpm": 149,
+  "audioFile": "audio/APT.wav",
+  "rhythmPattern": "basic",
+  "delay": 4000
+}

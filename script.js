@@ -193,8 +193,8 @@ class KaraokePlayer {
         this.bouncingBall = null;
         
         // Configuration
-        this.availableSongs = ['dancing-queen', 'oops-i-did-it-again', 'call-me-maybe'];
-        this.availableLyrics = ['against-damaro-I', 'against-damaro-II', 'curse-against-theagenes-and-other-cooks', 'curse-on-the-murderers-of-heraklea-and-marthine', 'curses-from-the-temple-of-demeter-at-knidos-I', 'curses-from-the-temple-of-demeter-at-knidos-II', 'curses-from-the-temple-of-demeter-at-knidos-III', 'docimedis', 'oropos', 'thetima-dionysophon', 'tretia-maria', 'vilbia', 'maqlu'];
+        this.availableSongs = ['dancing-queen', 'oops-i-did-it-again', 'call-me-maybe','APT', 'little-apple'];
+        this.availableLyrics = ['against-damaro-I', 'against-damaro-II', 'curse-against-theagenes-and-other-cooks', 'curse-on-the-murderers-of-heraklea-and-marthine', 'curses-from-the-temple-of-demeter-at-knidos-I', 'curses-from-the-temple-of-demeter-at-knidos-II', 'curses-from-the-temple-of-demeter-at-knidos-III', 'docimedis', 'oropos', 'thetima-dionysophon', 'tretia-maria', 'vilbia', 'maqlu', 'protect-the-bearer', 'fabia', 'spirit-tablet'];
         this.availableImages = ["Roman_baths_2014_57.jpg", "Roman_baths_2014_58.jpg", "Roman_baths_2014_60.jpg", "Roman_baths_2014_61.jpg"];
         this.availableAnimations = ['spin-horizontal-3d', 'spin-vertical-3d', 'squish-upwards'];
         
@@ -264,7 +264,7 @@ class KaraokePlayer {
         this.lyricsData.lyrics.forEach(lyrics => {
             const option = document.createElement('option');
             option.value = lyrics.id;
-            option.textContent = `${lyrics.title} (${lyrics.date})`;
+            option.textContent = `${lyrics.title} (${lyrics.date}) [${lyrics.genre}]`;
             this.lyricsSelect.appendChild(option);
         });
     }
@@ -291,10 +291,14 @@ class KaraokePlayer {
         const root = document.documentElement;
         if (lyricsData.genre === 'Curse') {
             root.style.setProperty('--text-color', 'var(--curse-text-color)');
+            root.style.setProperty('--text-darker-color', 'var(--curse-text-darker-color)');
             root.style.setProperty('--shadow-color', 'var(--curse-shadow-color)');
+            root.style.setProperty('--shadow-darker-color', 'var(--curse-shadow-darker-color)');
         } else if (lyricsData.genre === 'Blessing') {
             root.style.setProperty('--text-color', 'var(--blessing-text-color)');
+            root.style.setProperty('--text-darker-color', 'var(--blessing-text-darker-color)');
             root.style.setProperty('--shadow-color', 'var(--blessing-shadow-color)');
+            root.style.setProperty('--shadow-darker-color', 'var(--blessing-shadow-darker-color)');
         }
     }
 
@@ -505,7 +509,14 @@ class KaraokePlayer {
         // Create bouncing ball
         this.bouncingBall = document.createElement('div');
         this.bouncingBall.className = 'bouncing-ball';
-        this.bouncingBall.textContent = '👹';
+        
+        // Set emoji based on lyrics genre
+        if (this.currentLyrics && this.currentLyrics.genre === 'Blessing') {
+            this.bouncingBall.textContent = '👼';
+        } else {
+            this.bouncingBall.textContent = '👹';
+        }
+        
         container.appendChild(this.bouncingBall);
 
 

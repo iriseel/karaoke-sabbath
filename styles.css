@@ -1,14 +1,22 @@
 :root {
     --text-color: #666666;
+    --text-darker-color: #666666;
     --shadow-color: rgba(245,245,245,0.5);
+    --shadow-darker-color: rgba(245,245,245,0.5);
 
     --h2-text-color: #666666;
     --h2-shadow-color: rgba(245,245,245,0.5);
 
+
     --curse-text-color: rgba(255, 0, 0, 0.77);
+    --curse-text-darker-color: rgba(196, 0, 0, 0.77);
     --curse-shadow-color: #730000;
+    --curse-shadow-darker-color: #250000;
+
     --blessing-text-color: rgba(0, 0, 255, 0.77);
+    --blessing-text-darker-color: rgba(0, 0, 168, 0.77);
     --blessing-shadow-color: #01005a;
+    --blessing-shadow-darker-color: #01002b;
 }
 
 * {
@@ -45,7 +53,7 @@ body {
 
 
 /* TYPOGRAPHY */
-h1, h2  {
+h1, h2, .syllable-part  {
     color: transparent;
     -webkit-background-clip: text;
     -moz-background-clip: text;
@@ -53,7 +61,7 @@ h1, h2  {
 }
 
 
-h1 {
+h1, .syllable-part {
     background-color: var(--shadow-color);
     text-shadow: 2px 4px 1.5px var(--text-color);
 }
@@ -108,6 +116,7 @@ h4 {
 }
 
 .lyrics-background {
+    /* display: none; */
     position: absolute;
     top: 0;
     left: 0;
@@ -131,11 +140,6 @@ h4 {
 }
 
 .word {
-    text-shadow: 
-        -5px -5px 0 black,  
-         5px -5px 0 black,
-        -5px  5px 0 black,
-         5px  5px 0 black;
     display: inline-block;
     margin: 0 8px;
     position: relative;
@@ -148,17 +152,9 @@ h4 {
     transition: color 0.5s ease;
 }
 
-.syllable-part.active {
-    color: black;
-    text-shadow: 
-        -5px -5px 0 var(--text-color),  
-         5px -5px 0 var(--text-color),
-        -5px  5px 0 var(--text-color),
-         5px  5px 0 var(--text-color);
-}
-
-.syllable-part.completed {
-    color:black;
+.syllable-part.active, .syllable-part.completed {
+    text-shadow: 2px 4px 1.5px var(--text-darker-color);
+    background-color: var(--shadow-darker-color);
 }
 
 .bouncing-ball {

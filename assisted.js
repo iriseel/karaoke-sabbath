@@ -42,6 +42,7 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         this.ttsVolume = 0.8;
         this.ttsRestartScheduled = false;
         this.ttsInitialized = false;
+        this.audioContext = null;
         
         // Lyrics display
         this.currentLyricsStringIndex = 0;
@@ -234,9 +235,9 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
                         // Configure speech parameters with iOS optimizations
                         if (this.isIOS) {
                             // iOS has issues with high TTS rates and overlapping speech
-                            utterance.rate = Math.min(1.2, this.rhythmEngine.getTTSRate() * 0.7); // Slower on iOS
-                            utterance.pitch = 1.0; // Lower pitch for better iOS performance
-                            utterance.volume = 0.6; // Lower volume to prevent audio conflicts
+                            utterance.rate = Math.min(0.8, this.rhythmEngine.getTTSRate() * 0.5); // Much slower on iOS
+                            utterance.pitch = 1.0; // Standard pitch for iOS
+                            utterance.volume = 0.8; // Higher volume to ensure audibility
                         } else {
                             utterance.rate = this.rhythmEngine.getTTSRate(); // Pattern-specific rate
                             utterance.pitch = 1.2; // Higher pitch for singing
@@ -247,14 +248,10 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
                         const voices = this.speechSynthesis.getVoices();
                         let preferredVoice;
                         if (this.isIOS) {
-                            // On iOS, prefer system voices that work better
+                            // On iOS, prefer any working English voice
                             preferredVoice = voices.find(voice => 
-                                voice.localService && (
-                                    voice.name.includes('Samantha') || 
-                                    voice.name.includes('Alex') ||
-                                    voice.lang.startsWith('en')
-                                )
-                            );
+                                voice.localService && voice.lang.startsWith('en')
+                            ) || voices.find(voice => voice.lang.startsWith('en'));
                         } else {
                             preferredVoice = voices.find(voice => 
                                 voice.name.includes('Google') || 
@@ -264,6 +261,7 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
                         }
                         if (preferredVoice) {
                             utterance.voice = preferredVoice;
+                            console.log('Using voice:', preferredVoice.name, 'Local:', preferredVoice.localService);
                         }
                         
                         this.speechUtterances.push({
@@ -426,28 +424,91 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         }
     }
 
+    async initializeAudioContextForIOS() {
+        if (!this.isIOS || this.audioContext) return;
+        
+        try {
+            // Create AudioContext to control audio behavior
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Set audio context category to prevent ducking
+            if (this.audioContext.audioWorklet) {
+                // Modern approach - set the context to not duck audio
+                await this.audioContext.resume();
+            }
+            
+            // Configure audio element to work with context
+            if (this.audioElement && this.audioContext) {
+                // Connect audio element to context to prevent ducking
+                const source = this.audioContext.createMediaElementSource(this.audioElement);
+                source.connect(this.audioContext.destination);
+            }
+            
+            console.log('Audio context initialized for iOS to prevent ducking');
+        } catch (error) {
+            console.warn('Failed to initialize audio context for iOS:', error);
+        }
+    }
+
     async initializeTTSForIOS() {
         if (!this.isIOS || this.ttsInitialized) return;
         
         try {
-            // Create and speak a silent utterance to initialize TTS on iOS
-            const testUtterance = new SpeechSynthesisUtterance(' ');
-            testUtterance.volume = 0;
-            testUtterance.rate = 1;
-            
             console.log('Initializing TTS for iOS...');
+            
+            // Initialize audio context first to prevent ducking
+            await this.initializeAudioContextForIOS();
+            
+            // Force voices to load first
+            let voices = this.speechSynthesis.getVoices();
+            if (voices.length === 0) {
+                console.log('Waiting for voices to load...');
+                await new Promise((resolve) => {
+                    const checkVoices = () => {
+                        voices = this.speechSynthesis.getVoices();
+                        if (voices.length > 0) {
+                            resolve();
+                        } else {
+                            setTimeout(checkVoices, 100);
+                        }
+                    };
+                    this.speechSynthesis.addEventListener('voiceschanged', resolve, { once: true });
+                    setTimeout(resolve, 2000); // Max 2 second wait
+                    checkVoices();
+                });
+            }
+            
+            // Create and speak a test utterance to initialize TTS on iOS
+            const testUtterance = new SpeechSynthesisUtterance('test');
+            testUtterance.volume = 0.1; // Very quiet but not silent
+            testUtterance.rate = 2; // Fast to minimize disruption
+            testUtterance.pitch = 1;
+            
+            // Use the first available voice
+            voices = this.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                testUtterance.voice = voices[0];
+            }
+            
+            this.speechSynthesis.cancel(); // Clear any existing queue
             this.speechSynthesis.speak(testUtterance);
             
             // Wait for the utterance to complete
             await new Promise((resolve) => {
-                testUtterance.onend = resolve;
-                testUtterance.onerror = resolve;
+                testUtterance.onend = () => {
+                    console.log('TTS test utterance completed');
+                    resolve();
+                };
+                testUtterance.onerror = (e) => {
+                    console.warn('TTS test utterance error:', e);
+                    resolve();
+                };
                 // Fallback timeout
-                setTimeout(resolve, 500);
+                setTimeout(resolve, 1000);
             });
             
             this.ttsInitialized = true;
-            console.log('TTS initialized for iOS');
+            console.log('TTS initialized for iOS successfully');
         } catch (error) {
             console.warn('Failed to initialize TTS for iOS:', error);
         }
@@ -483,7 +544,10 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         // Start text-to-speech if enabled (with iOS initialization)
         if (this.speechEnabled) {
             if (this.isIOS) {
-                this.initializeTTSForIOS().then(() => {
+                // On iOS, ensure audio context is set up before TTS
+                this.initializeAudioContextForIOS().then(() => {
+                    return this.initializeTTSForIOS();
+                }).then(() => {
                     this.startTextToSpeech();
                 });
             } else {
@@ -611,31 +675,31 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
                 if (this.isPlaying && this.speechEnabled && activeUtterances < maxConcurrentUtterances) {
                     console.log('Speaking word:', `"${timing.word}"`, 'utterance text:', `"${utterance.text}"`);
                     
-                    // iOS-specific volume handling
+                    // iOS-specific volume handling to minimize ducking
                     if (this.isIOS) {
-                        utterance.volume = 0.6; // Fixed lower volume for iOS
+                        utterance.volume = 0.3; // Much lower volume to minimize ducking
+                        // On iOS, don't allow overlapping - cancel previous on each new word
+                        this.speechSynthesis.cancel();
+                        activeUtterances = 0;
                     } else {
                         utterance.volume = Math.max(0, Math.min(1, this.ttsVolume || 0.8));
+                        activeUtterances++;
                     }
-                    
-                    activeUtterances++;
                     
                     // Add event listeners to track utterance lifecycle
                     utterance.onend = () => {
                         activeUtterances = Math.max(0, activeUtterances - 1);
+                        if (this.isIOS) {
+                            console.log('iOS TTS utterance ended:', timing.word);
+                        }
                     };
                     
-                    utterance.onerror = () => {
+                    utterance.onerror = (e) => {
                         activeUtterances = Math.max(0, activeUtterances - 1);
-                        console.warn('TTS utterance error for word:', timing.word);
+                        console.warn('TTS utterance error for word:', timing.word, e);
                     };
                     
-                    // On iOS, don't allow overlapping - cancel previous on each new word
-                    if (this.isIOS) {
-                        this.speechSynthesis.cancel();
-                        activeUtterances = 0;
-                    }
-                    
+                    console.log('Speaking on iOS:', timing.word, 'volume:', utterance.volume);
                     this.speechSynthesis.speak(utterance);
                 }
             }, delay);

@@ -111,13 +111,22 @@ h4 {
 
 /* Emoji font fallback for better mobile support */
 h1, h2, .mode-card h2, .bouncing-ball {
-    font-family: 'hershey', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiOne Mozilla', monospace;
+    font-family: 'hershey', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiOne Mozilla', 'Twemoji Mozilla', system-ui, sans-serif;
+}
+
+/* Force emoji rendering with specific spans */
+.emoji {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiOne Mozilla', 'Twemoji Mozilla', system-ui, sans-serif !important;
+    font-variant-emoji: emoji;
+    font-feature-settings: "liga" off;
+    text-rendering: optimizeSpeed;
 }
 
 /* Ensure emojis render properly on all platforms */
-.emoji, .bouncing-ball {
+.bouncing-ball {
     font-variant-emoji: emoji;
     font-feature-settings: "liga" off;
+    text-rendering: optimizeSpeed;
 }
 
 /* LYRICS */

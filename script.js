@@ -240,10 +240,26 @@ class BaseKaraokePlayer {
         this.audioElement.preload = 'auto';
         this.audioElement.volume = this.audioVolume;
         
+        // Set audio element attributes to prevent ducking on iOS
+        this.audioElement.setAttribute('playsinline', 'true');
+        this.audioElement.setAttribute('webkit-playsinline', 'true');
+        
         console.log('Audio element created:', this.audioElement);
 
         this.audioElement.addEventListener('loadedmetadata', () => {
             console.log(`Audio loaded: ${song.title}`);
+            
+            // Connect to audio context if available (for iOS ducking prevention)
+            if (this.audioContext && !this.audioElement._connected) {
+                try {
+                    const source = this.audioContext.createMediaElementSource(this.audioElement);
+                    source.connect(this.audioContext.destination);
+                    this.audioElement._connected = true;
+                    console.log('Audio element connected to context to prevent ducking');
+                } catch (error) {
+                    console.warn('Failed to connect audio to context:', error);
+                }
+            }
         });
 
         this.audioElement.addEventListener('error', (e) => {

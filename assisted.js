@@ -198,7 +198,12 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             return;
         }
         
-        console.log('Setting up TTS with', this.allStringTimings.length, 'string timings');
+        // Detect if we're on iOS/iPad for mobile optimizations
+        this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        
+        console.log('Setting up TTS with', this.allStringTimings.length, 'string timings', 
+                   this.isIOS ? '(iOS detected)' : '(Desktop)');
         
         // Ensure voices are loaded
         const setupVoices = () => {
@@ -225,18 +230,37 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
                         console.log('Creating utterance for word:', `"${timing.word}"`, '-> TTS:', `"${ttsWord}"`, 'at time:', timing.startTime);
                         const utterance = new SpeechSynthesisUtterance(ttsWord);
                         
-                        // Configure speech parameters
-                        utterance.rate = this.rhythmEngine.getTTSRate(); // Pattern-specific rate
-                        utterance.pitch = 1.2; // Higher pitch for singing
-                        utterance.volume = Math.max(0, Math.min(1, this.ttsVolume || 0.8));
+                        // Configure speech parameters with iOS optimizations
+                        if (this.isIOS) {
+                            // iOS has issues with high TTS rates and overlapping speech
+                            utterance.rate = Math.min(1.2, this.rhythmEngine.getTTSRate() * 0.7); // Slower on iOS
+                            utterance.pitch = 1.0; // Lower pitch for better iOS performance
+                            utterance.volume = 0.6; // Lower volume to prevent audio conflicts
+                        } else {
+                            utterance.rate = this.rhythmEngine.getTTSRate(); // Pattern-specific rate
+                            utterance.pitch = 1.2; // Higher pitch for singing
+                            utterance.volume = Math.max(0, Math.min(1, this.ttsVolume || 0.8));
+                        }
                         
-                        // Try to get a more musical voice
+                        // Try to get a more musical voice, prefer system voices on iOS
                         const voices = this.speechSynthesis.getVoices();
-                        const preferredVoice = voices.find(voice => 
-                            voice.name.includes('Google') || 
-                            voice.name.includes('Alex') ||
-                            voice.name.includes('Samantha')
-                        );
+                        let preferredVoice;
+                        if (this.isIOS) {
+                            // On iOS, prefer system voices that work better
+                            preferredVoice = voices.find(voice => 
+                                voice.localService && (
+                                    voice.name.includes('Samantha') || 
+                                    voice.name.includes('Alex') ||
+                                    voice.lang.startsWith('en')
+                                )
+                            );
+                        } else {
+                            preferredVoice = voices.find(voice => 
+                                voice.name.includes('Google') || 
+                                voice.name.includes('Alex') ||
+                                voice.name.includes('Samantha')
+                            );
+                        }
                         if (preferredVoice) {
                             utterance.voice = preferredVoice;
                         }
@@ -456,9 +480,13 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             this.audioElement.pause();
         }
         
-        // Stop text-to-speech
+        // Stop text-to-speech with iOS-specific handling
         if (this.speechSynthesis) {
             this.speechSynthesis.cancel();
+            // On iOS, sometimes need multiple cancel calls
+            if (this.isIOS) {
+                setTimeout(() => this.speechSynthesis.cancel(), 50);
+            }
         }
         this.ttsTimeouts.forEach(timeout => clearTimeout(timeout));
         this.ttsTimeouts = [];
@@ -482,9 +510,13 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             this.audioElement.currentTime = 0;
         }
         
-        // Stop text-to-speech
+        // Stop text-to-speech with iOS-specific handling
         if (this.speechSynthesis) {
             this.speechSynthesis.cancel();
+            // On iOS, sometimes need multiple cancel calls
+            if (this.isIOS) {
+                setTimeout(() => this.speechSynthesis.cancel(), 50);
+            }
         }
         this.ttsTimeouts.forEach(timeout => clearTimeout(timeout));
         this.ttsTimeouts = [];
@@ -509,18 +541,27 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         
         console.log('Starting TTS with', this.speechUtterances.length, 'utterances');
         
-        // Clear any existing timeouts
+        // Clear any existing timeouts and cancel pending speech
         this.ttsTimeouts.forEach(timeout => clearTimeout(timeout));
         this.ttsTimeouts = [];
+        
+        // On iOS, ensure speech queue is clear to prevent issues
+        if (this.isIOS) {
+            this.speechSynthesis.cancel();
+        }
         
         // Calculate current time offset for resume functionality
         const currentTimeOffset = this.pausedTime || 0;
         console.log('TTS resuming from time offset:', currentTimeOffset);
         
+        // Track active utterances to prevent queue overflow on iOS
+        let activeUtterances = 0;
+        const maxConcurrentUtterances = this.isIOS ? 3 : 10; // iOS has stricter limits
+        
         // Schedule each word to be spoken at the correct time
         this.speechUtterances.forEach(({ utterance, timing }, index) => {
             // Calculate delay relative to current playback position
-            const absoluteDelay = timing.startTime - 100; // Start 100ms early
+            const absoluteDelay = timing.startTime - (this.isIOS ? 200 : 100); // Start earlier on iOS
             const relativeDelay = absoluteDelay - currentTimeOffset;
             const delay = Math.max(0, relativeDelay); // Don't allow negative delays
             
@@ -533,12 +574,34 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             console.log(`Scheduling word "${timing.word}" in ${delay}ms (absolute: ${absoluteDelay}, offset: ${currentTimeOffset})`);
             
             const timeout = setTimeout(() => {
-                if (this.isPlaying && this.speechEnabled) {
+                if (this.isPlaying && this.speechEnabled && activeUtterances < maxConcurrentUtterances) {
                     console.log('Speaking word:', `"${timing.word}"`, 'utterance text:', `"${utterance.text}"`);
-                    // Ensure volume is a valid number
-                    utterance.volume = Math.max(0, Math.min(1, this.ttsVolume || 0.8));
                     
-                    // Don't cancel - let words overlap naturally for singing effect
+                    // iOS-specific volume handling
+                    if (this.isIOS) {
+                        utterance.volume = 0.6; // Fixed lower volume for iOS
+                    } else {
+                        utterance.volume = Math.max(0, Math.min(1, this.ttsVolume || 0.8));
+                    }
+                    
+                    activeUtterances++;
+                    
+                    // Add event listeners to track utterance lifecycle
+                    utterance.onend = () => {
+                        activeUtterances = Math.max(0, activeUtterances - 1);
+                    };
+                    
+                    utterance.onerror = () => {
+                        activeUtterances = Math.max(0, activeUtterances - 1);
+                        console.warn('TTS utterance error for word:', timing.word);
+                    };
+                    
+                    // On iOS, don't allow overlapping - cancel previous on each new word
+                    if (this.isIOS) {
+                        this.speechSynthesis.cancel();
+                        activeUtterances = 0;
+                    }
+                    
                     this.speechSynthesis.speak(utterance);
                 }
             }, delay);
@@ -569,10 +632,11 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             return;
         }
 
-        // Prepare for TTS restart 500ms before lyrics end
+        // Prepare for TTS restart - more conservative timing on iOS
+        const restartTiming = this.isIOS ? 1000 : 500; // iOS needs more time
         const timeUntilEnd = totalDuration - currentTime;
-        if (timeUntilEnd <= 500 && timeUntilEnd > 0 && this.speechEnabled && !this.ttsRestartScheduled) {
-            console.log('Scheduling TTS restart in 500ms before lyrics end');
+        if (timeUntilEnd <= restartTiming && timeUntilEnd > 0 && this.speechEnabled && !this.ttsRestartScheduled) {
+            console.log(`Scheduling TTS restart in ${restartTiming}ms before lyrics end`);
             this.ttsRestartScheduled = true;
             
             setTimeout(() => {
@@ -587,10 +651,15 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
                         this.speechSynthesis.cancel();
                     }
                     
-                    // Schedule TTS to start from the beginning with timing offset
-                    this.startTextToSpeech();
+                    // On iOS, add a small delay before restarting to avoid conflicts
+                    const restartDelay = this.isIOS ? 200 : 0;
+                    setTimeout(() => {
+                        if (this.isPlaying && this.speechEnabled) {
+                            this.startTextToSpeech();
+                        }
+                    }, restartDelay);
                 }
-            }, 500);
+            }, restartTiming);
         }
 
         // If lyrics have completed but audio is still playing, loop the lyrics

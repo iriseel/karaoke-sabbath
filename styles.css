@@ -44,7 +44,7 @@ body {
     background: var(--bgColor);
     min-height: 100vh;
     color: white;
-    font-size:20px;
+    font-size:16px;
 }
 
 .container {

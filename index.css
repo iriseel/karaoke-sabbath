@@ -1,0 +1,67 @@
+.mode-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: var(--padding);
+}
+
+.mode-selection > * {
+    max-width: 1000px;
+}
+
+.mode-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--padding);
+}
+
+.mode-card {
+    border: 2px solid white;
+    padding: 2em;
+    background: rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.mode-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.mode-card h2 {
+    margin-bottom: 1em;
+}
+
+.mode-card p {
+    font-size: 1.1em;
+    line-height: 1.6em;
+    margin: 0;
+}
+
+.title {
+    margin-bottom: 1em;
+}
+
+.blessing, .curse {
+    color: transparent;
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+}
+
+.blessing {
+    background-color: var(--blessing-shadow-color);
+    text-shadow: 2px 4px 1.5px var(--blessing-text-color);
+}
+
+
+.curse {
+    background-color: var(--curse-shadow-color);
+    text-shadow: 2px 4px 1.5px var(--curse-text-color);
+}

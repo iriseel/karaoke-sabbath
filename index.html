@@ -3,74 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karaoke Sabbath - Syllable-Synced Karaoke System</title>
+    <title>Karaoke Sabbath - Choose Your Mode</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="index.css">
+    
 </head>
 <body>
     <div class="container">
-        <div class="lyrics-display">
-            <div class="lyrics-info">
-                <h1 class="help">Select an instrumental track and lyrics to begin karaoke...</h1>
-                <div class="lyrics-details hidden">
-                    <h1 class="lyrics-title">Song Title</h1>
-                    <h1>Date: <span class="lyrics-date">Date</span></h1>
-                    <h1>Location: <span class="lyrics-location">Location</span></h1>
-                    <h1>Genre: <span class="lyrics-genre">Genre</span></h1>
-                </div>
+        <div class="mode-selection">
+            <div class="title">
+                <h1>🎤 Karaoke Sabbath (v.05)</h1>
+                <h2>Choose Your Experience</h2>
+                <br>
+                <p>
+                    Magic makes desire real through the power of repetition. Folding a thousand paper cranes heals a loved one. Reciting a mantra 108 times purifies karma. Saying one thing across a lifetime will one day make it true. In the present, where religious forms of invocation have become faded in legitimacy, what better way to harness the power of repetition than through karaoke?
+                </p>
+                <p>
+                    Sing along to lyrics that have been sampled from millenia of curses and blessings, and in doing so, make these bygone wishes come true.
+                </p>
             </div>
+            
+            <div class="mode-cards">
+                <a href="solo.html" class="mode-card">
+                    <h2>🎵 Solo Mode 🎵</h2>
+                    <p>Cycle through mixes sampling millenia of curses or blessings, set against a pop song of your choosing! Chant along at your own pace.</p>
+                </a>
 
-            <div class="lyrics-background"></div>
-        </div>
-
-        <div class="info">
-            <div class="status-display">
-                <h4 class="status-caption">
-                    Status
-                </h4>
-                <div class="status-message">
-                    Ready - Select instrumental and lyrics to begin
-                </div>
+                <a href="assisted.html" class="mode-card">
+                    <h2>😇 Companion Mode 👹</h2>
+                    <p>Can you keep up with a bona-fide prayer machine? Test your incantation endurance against a text-to-speech shaman that recites without end, or simply bear witness to its infinite performance.</p>
+                </a>
             </div>
-                <button onclick="testBackgroundAnimation()">Test Animation</button>
-                <button onclick="testBackgroundChange()">Change BG</button>
-        </div>
-
-        <div class="controls-panel">
-            <div class="control-group">
-                <label for="songSelect">
-                    <h4>
-                        Instrumental
-                    </h4>
-                </label>
-                <select class="song-select">
-                    <option value="">-- Select Instrumental --</option>
-                </select>
-                
-            </div>
-
-            <div class="control-group">
-                <label for="lyricsSelect">
-                    <h4>
-                        Lyrics
-                    </h4>
-                </label>
-                <select class="lyrics-select">
-                    <option value="">-- Select Lyrics --</option>
-                </select>
-            </div>
-
-            <!-- <div class="control-group"> -->
-                <button onclick="handleKaraokeButton()" class="load-karaoke-btn">
-                    <h2>
-                        Choose song and lyrics
-                    </h2>
-                </button>
-
-                <!-- <button onclick="resetPlayback()">Reset</button> -->
-            <!-- </div> -->
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>

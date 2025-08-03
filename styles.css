@@ -1,4 +1,10 @@
 :root {
+    --UI-padding: 10px;
+    --padding: 1em;
+
+    --bgColor: green;
+    --bgDarkerColor: lightgreen;
+
     --text-color: #666666;
     --text-darker-color: #666666;
     --shadow-color: rgba(245,245,245,0.5);
@@ -34,8 +40,8 @@
 
 body {
     font-family: 'hershey', monospace;
-    line-height:1em;
-    background: green;
+    line-height:1.6em;
+    background: var(--bgColor);
     min-height: 100vh;
     color: white;
     font-size:20px;
@@ -46,14 +52,19 @@ body {
 }
 
 /* borders and padding */
-.controls-panel, .info, .info div, .controls-panel div, input, select, textarea, button, option {
+.controls-panel, .info, .info div, .control-group, input, select, textarea, button, option {
     border: 2px solid white;
-    padding: 1em;
+    padding: var(--UI-padding);
 }
 
 
 /* TYPOGRAPHY */
-h1, h2, .syllable-part  {
+a {
+    color: var(--bgDarkerColor);
+    text-decoration: none;
+}
+
+h1, h2, .word, .lyrics-line {
     color: transparent;
     -webkit-background-clip: text;
     -moz-background-clip: text;
@@ -61,7 +72,7 @@ h1, h2, .syllable-part  {
 }
 
 
-h1, .syllable-part {
+h1, .word, .lyrics-line {
     background-color: var(--shadow-color);
     text-shadow: 2px 4px 1.5px var(--text-color);
 }
@@ -71,7 +82,7 @@ h2 {
     text-shadow: 2px 4px 1.5px var(--h2-text-color);
 }
 
-h1, .lyrics-container, .bouncing-ball {
+h1, .lyrics-line, .bouncing-ball {
     font-size: 2.5em;
     line-height: 2em;
 }
@@ -87,9 +98,11 @@ h2 {
 
 h4 {
     font-size:.75em;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.06em;
 
     display: block;
-    padding: 0 0 1em 0;
+    padding: 0 0 var(--UI-padding) 0;
 }
 
 .hidden {
@@ -98,21 +111,19 @@ h4 {
 
 /* LYRICS */
 .lyrics-display {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 1em;
-    height:75%;
+    padding: var(--padding);
+    height:100vh;
     text-align: center;
     position: relative;
     overflow: hidden;
 
     display:flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
 }
 
 .help {
-    max-width:1000px;
+    max-width:1200px;
 }
 
 .lyrics-background {
@@ -139,20 +150,15 @@ h4 {
     position: relative;
 }
 
+
 .word {
+    position: relative;
     display: inline-block;
     margin: 0 8px;
-    position: relative;
     transition: all 0.3s ease;
 }
 
-.syllable-part {
-    position: relative;
-    display: inline;
-    transition: color 0.5s ease;
-}
-
-.syllable-part.active, .syllable-part.completed {
+.word.active, .word.completed {
     text-shadow: 2px 4px 1.5px var(--text-darker-color);
     background-color: var(--shadow-darker-color);
 }
@@ -202,22 +208,19 @@ h4 {
     }
 }
 
-/* INFO */
-.info {
-    position:fixed;
-    left:1em;
-    top:1em;
-}
-
 /* CONTROLS */
 .controls-panel {
-    height:25%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 10px;
+    position:fixed;
+    z-index:100;
+    left:0;
+    bottom: 0;
+    width:100%;
+    height:auto;
+    gap: var(--UI-padding);
+    background: var(--bgColor);
 }
 
-.controls-panel, .control-group, label, input, select, textarea, button, option {
+label, input, select, textarea, button, option {
     color:inherit;
     font-size: inherit;
     font-family:inherit;
@@ -252,13 +255,53 @@ button:disabled {
 
 .volume-slider {
     width: 80%;
-    margin: 10px 5px 10px 0;
 }
 
 .volume-display {
     color: #fff;
 }
 
+/* Shared styles for current title display */
+.current-title-display {
+    margin: 15px 0;
+}
+
+.current-song-title {
+    font-weight: bold;
+    color: #fff;
+}
+
+
+/* Grid area assignments */
+.back-area {
+    grid-area: back-area;
+}
+
+.status-area {
+    grid-area: status-area;
+}
+
+.volume-area {
+    grid-area: volume-area;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--UI-padding);
+}
+
+.song-area {
+    grid-area: song-area;
+}
+
+.lyrics-area {
+    grid-area: lyrics-area;
+}
+
+.button-area {
+    grid-area: button-area;
+}
+
+
+/* MEDIA QUERIES */
 @media (max-width: 768px) {
     .container {
         padding: 20px;
@@ -282,29 +325,4 @@ button:disabled {
     }
 }
 
-@keyframes spin-horizontal-3d {
-    0% {
-        transform: rotateY(0deg);
-    }
-    100% {
-        transform: rotateY(360deg);
-    }
-}
 
-@keyframes spin-vertical-3d {
-    0% {
-        transform: rotateX(0deg);
-    }
-    100% {
-        transform: rotateX(360deg);
-    }
-}
-
-@keyframes squish-upwards {
-    0% {
-        transform: scaleY(1);
-    }
-    100% {
-        transform: scaleY(0);
-    }
-}

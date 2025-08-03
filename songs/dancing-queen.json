@@ -4,6 +4,6 @@
   "artist": "ABBA",
   "bpm": 101,
   "audioFile": "audio/dancing-queen.wav",
-  "rhythmPattern": "mixed",
-  "delay": 0
+  "rhythmPattern": "dancingQueen",
+  "delay": 19000
 }

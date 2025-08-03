@@ -4,6 +4,6 @@
   "artist": "Chopstick Brothers (筷子兄弟)",
   "bpm": 120,
   "audioFile": "audio/Little-Apple.wav",
-  "rhythmPattern": "basic",
+  "rhythmPattern": "littleApple",
   "delay": 16000
 }

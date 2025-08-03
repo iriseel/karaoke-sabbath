@@ -44,7 +44,69 @@ body {
     background: var(--bgColor);
     min-height: 100vh;
     color: white;
-    font-size:16px;
+    font-size:20px;
+}
+
+/* Audio Speed Controls */
+.audio-speed-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    min-width: 150px;
+}
+
+.speed-control-label {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.audio-speed-slider {
+    width: 120px;
+    height: 6px;
+    border-radius: 3px;
+    background: #333;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.audio-speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--text-color);
+    cursor: pointer;
+    border: 2px solid white;
+}
+
+.audio-speed-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--text-color);
+    cursor: pointer;
+    border: 2px solid white;
+}
+
+.speed-control-value {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 50px;
 }
 
 .container {

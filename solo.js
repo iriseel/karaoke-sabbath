@@ -24,7 +24,11 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
         this.soloScrollInterval = null;
         this.currentSoloSongIndex = 0;
         this.soloAnimationStartTime = null;
+        this.soloAnimationPauseTime = null;
         this.scrollRate = 50; // pixels per second
+        
+        // Audio speed control
+        this.audioSpeed = 1.0;
         
         this.init();
     }
@@ -184,6 +188,17 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
                 const audioSetupResult = this.setupAudio(this.songSelect.value);
                 console.log('Audio setup result:', audioSetupResult);
                 console.log('Audio element after setup:', this.audioElement);
+                
+                // Add audio looping event listener
+                if (this.audioElement) {
+                    this.audioElement.addEventListener('ended', () => {
+                        if (this.isPlaying) {
+                            console.log('Audio ended, restarting for loop');
+                            this.audioElement.currentTime = 0;
+                            this.audioElement.play().catch(e => console.warn('Audio restart failed:', e));
+                        }
+                    });
+                }
             } else {
                 console.error('Could not find song with ID:', this.songSelect.value);
                 this.updateStatus('Error: Song not found');
@@ -193,6 +208,9 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
 
         this.isPlaying = true;
         this.isPaused = false;
+        
+        // Reset pause time when starting fresh
+        this.soloAnimationPauseTime = null;
 
         // Start audio
         console.log('Audio element:', this.audioElement);
@@ -200,6 +218,7 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
         
         if (this.audioElement && !this.audioElement.error) {
             this.audioElement.volume = this.audioVolume;
+            this.audioElement.playbackRate = this.audioSpeed;
             this.audioElement.currentTime = 0;
             console.log('Attempting to play audio...');
             this.audioElement.play()
@@ -233,6 +252,9 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
         this.isPlaying = false;
         this.isPaused = true;
         
+        // Track when the animation was paused
+        this.soloAnimationPauseTime = Date.now();
+        
         // Pause audio
         if (this.audioElement && !this.audioElement.error) {
             this.audioElement.pause();
@@ -260,6 +282,12 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
         this.isPlaying = true;
         this.isPaused = false;
         
+        // Adjust animation start time to account for pause duration
+        if (this.soloAnimationStartTime && this.soloAnimationPauseTime) {
+            const pauseDuration = Date.now() - this.soloAnimationPauseTime;
+            this.soloAnimationStartTime += pauseDuration;
+        }
+        
         // Resume audio
         if (this.audioElement && !this.audioElement.error) {
             this.audioElement.play().catch(e => console.warn('Audio play failed:', e));
@@ -272,8 +300,8 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
             lyricsContainer.style.animationPlayState = 'running';
         }
         
-        // Restart interval for title tracking
-        this.startSoloScrolling();
+        // Restart interval for title tracking (but don't reset animation start time)
+        this.resumeSoloScrolling();
         
         this.karaokeBtn.querySelector('h2').textContent = 'Pause';
         this.updateStatus('Playing...');
@@ -313,6 +341,20 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
         }, 1000); // Update every second
     }
 
+    resumeSoloScrolling() {
+        console.log('Resuming solo scrolling');
+        
+        // Add CSS class to trigger animation (if not already present)
+        const container = this.lyricsDisplay;
+        container.classList.add('solo-mode');
+        
+        // Don't reset title - keep current position
+        // Just restart the interval for title tracking
+        this.soloScrollInterval = setInterval(() => {
+            this.updateLyricsTitle();
+        }, 1000); // Update every second
+    }
+
     updateLyricsTitle() {
         const container = this.lyricsDisplay;
         const lyricsContainer = container.querySelector('.lyrics-scroll-container');
@@ -338,11 +380,13 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
         const animationDuration = parseFloat(container.style.getPropertyValue('--scroll-duration')) || 60;
         const animationStartTime = this.soloAnimationStartTime || Date.now();
         const elapsed = (Date.now() - animationStartTime) / 1000;
-        const progress = Math.min(elapsed / animationDuration, 1);
+        
+        // Handle looping by using modulo operation
+        const cyclicProgress = (elapsed % animationDuration) / animationDuration;
         
         // Find which song section should be visible
         const lyricsSections = lyricsContainer.querySelectorAll('.lyrics-section');
-        const targetSectionIndex = Math.floor(progress * lyricsSections.length);
+        const targetSectionIndex = Math.floor(cyclicProgress * lyricsSections.length);
         const clampedIndex = Math.max(0, Math.min(targetSectionIndex, lyricsSections.length - 1));
         
         if (this.currentSoloSongIndex !== clampedIndex && filteredLyrics[clampedIndex]) {
@@ -375,6 +419,7 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
             // Restart animation
             lyricsContainer.style.animation = '';
             this.soloAnimationStartTime = Date.now();
+            this.soloAnimationPauseTime = null;
             this.currentSoloSongIndex = 0;
             
             // Restart scrolling if playing
@@ -399,7 +444,17 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
                 console.log('Currently playing, switching audio to:', this.currentSong.audioFile);
                 this.setupAudio(this.songSelect.value);
                 if (this.audioElement && !this.audioElement.error) {
+                    // Add audio looping event listener for the new audio element
+                    this.audioElement.addEventListener('ended', () => {
+                        if (this.isPlaying) {
+                            console.log('Audio ended, restarting for loop');
+                            this.audioElement.currentTime = 0;
+                            this.audioElement.play().catch(e => console.warn('Audio restart failed:', e));
+                        }
+                    });
+                    
                     this.audioElement.volume = this.audioVolume;
+                    this.audioElement.playbackRate = this.audioSpeed;
                     this.audioElement.currentTime = 0;
                     this.audioElement.play().catch(e => console.warn('Audio play failed:', e));
                 }
@@ -440,6 +495,7 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
             this.isPlaying = false;
             this.isPaused = false;
             this.soloAnimationStartTime = null;
+            this.soloAnimationPauseTime = null;
             this.currentSoloSongIndex = 0;
         }
         
@@ -503,6 +559,21 @@ class SoloKaraokePlayer extends BaseKaraokePlayer {
             }
         }
     }
+
+    setAudioSpeed(speed) {
+        this.audioSpeed = Math.max(1, Math.min(5, parseFloat(speed)));
+        
+        // Update the audio element if it exists
+        if (this.audioElement) {
+            this.audioElement.playbackRate = this.audioSpeed;
+        }
+        
+        // Update the display value
+        const valueDisplay = document.querySelector('.speed-control-value');
+        if (valueDisplay) {
+            valueDisplay.textContent = `${this.audioSpeed.toFixed(1)}x`;
+        }
+    }
 }
 
 // Initialize the solo mode player
@@ -516,4 +587,8 @@ function handlePlayButton() {
 
 function setScrollSpeed(speed) {
     player.setScrollSpeed(speed);
+}
+
+function setAudioSpeed(speed) {
+    player.setAudioSpeed(speed);
 }

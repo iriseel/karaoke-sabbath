@@ -44,6 +44,9 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         this.ttsInitialized = false;
         this.audioContext = null;
         
+        // Audio speed control
+        this.audioSpeed = 1.0;
+        
         // Lyrics display
         this.currentLyricsStringIndex = 0;
         this.lyricsStrings = [];
@@ -534,6 +537,7 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             this.currentWordIndex = 0;
             if (this.audioElement && !this.audioElement.error) {
                 this.audioElement.volume = this.audioVolume;
+                this.audioElement.playbackRate = this.audioSpeed;
                 this.audioElement.currentTime = 0;
                 this.audioElement.play().catch(e => console.warn('Audio play failed:', e));
             } else {
@@ -723,11 +727,12 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             ? this.allStringTimings[this.allStringTimings.length - 1].endTime 
             : this.rhythmEngine.getTotalDuration(this.timings);
 
-        // Check if audio has ended - if so, stop playback
+        // Check if audio has ended - if so, restart it to loop
         if (this.audioElement && this.audioElement.ended) {
-            this.stopPlayback();
-            this.updateStatus('Playback completed');
-            return;
+            console.log('Audio ended, restarting for loop');
+            this.audioElement.currentTime = 0;
+            this.audioElement.playbackRate = this.audioSpeed;
+            this.audioElement.play().catch(e => console.warn('Audio restart failed:', e));
         }
 
         // Prepare for TTS restart - more conservative timing on iOS
@@ -887,6 +892,21 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         this.ttsVolume = Math.max(0, Math.min(1, volume));
     }
 
+    setAudioSpeed(speed) {
+        this.audioSpeed = Math.max(1, Math.min(5, parseFloat(speed)));
+        
+        // Update the audio element if it exists
+        if (this.audioElement) {
+            this.audioElement.playbackRate = this.audioSpeed;
+        }
+        
+        // Update the display value
+        const valueDisplay = document.querySelector('.speed-control-value');
+        if (valueDisplay) {
+            valueDisplay.textContent = `${this.audioSpeed.toFixed(1)}x`;
+        }
+    }
+
     async handleSongChange() {
         // If karaoke is already loaded and playing, and song changes, auto-restart with new song
         if (this.karaokeLoaded && this.songSelect.value && this.lyricsSelect.value) {
@@ -935,7 +955,7 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             }
             
             // Update status to indicate user needs to press play
-            this.updateStatus('New lyrics loaded - Press Play to start');
+            this.updateStatus(`New lyrics loaded - Press "Start Karaoke" to begin`);
             this.karaokeBtn.querySelector('h2').textContent = '🎤 Start Karaoke';
         }
     }
@@ -969,4 +989,8 @@ function togglePlayback() {
 
 function stopPlayback() {
     player.stopPlayback();
+}
+
+function setAudioSpeed(speed) {
+    player.setAudioSpeed(speed);
 }

@@ -113,9 +113,9 @@ class RhythmEngine {
             // Real song patterns
             apt: 2.5,
             dancingQueen: 1.5,
-            callMeMaybe: 1.5,
+            callMeMaybe: 2,
             oopsIDidItAgain: 1,
-            littleApple: 1.75,
+            littleApple: 2,
             
             // Ancient rhythmic patterns
             ancient: 1.0,

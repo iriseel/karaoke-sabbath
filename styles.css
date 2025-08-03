@@ -39,7 +39,7 @@
 }
 
 body {
-    font-family: 'hershey', monospace;
+    font-family: 'hershey', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', monospace;
     line-height:1.6em;
     background: var(--bgColor);
     min-height: 100vh;
@@ -107,6 +107,17 @@ h4 {
 
 .hidden {
     display: none;
+}
+
+/* Emoji font fallback for better mobile support */
+h1, h2, .mode-card h2, .bouncing-ball {
+    font-family: 'hershey', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiOne Mozilla', monospace;
+}
+
+/* Ensure emojis render properly on all platforms */
+.emoji, .bouncing-ball {
+    font-variant-emoji: emoji;
+    font-feature-settings: "liga" off;
 }
 
 /* LYRICS */

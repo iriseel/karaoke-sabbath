@@ -41,6 +41,7 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         this.ttsTimeouts = [];
         this.ttsVolume = 0.8;
         this.ttsRestartScheduled = false;
+        this.ttsInitialized = false;
         
         // Lyrics display
         this.currentLyricsStringIndex = 0;
@@ -425,6 +426,33 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         }
     }
 
+    async initializeTTSForIOS() {
+        if (!this.isIOS || this.ttsInitialized) return;
+        
+        try {
+            // Create and speak a silent utterance to initialize TTS on iOS
+            const testUtterance = new SpeechSynthesisUtterance(' ');
+            testUtterance.volume = 0;
+            testUtterance.rate = 1;
+            
+            console.log('Initializing TTS for iOS...');
+            this.speechSynthesis.speak(testUtterance);
+            
+            // Wait for the utterance to complete
+            await new Promise((resolve) => {
+                testUtterance.onend = resolve;
+                testUtterance.onerror = resolve;
+                // Fallback timeout
+                setTimeout(resolve, 500);
+            });
+            
+            this.ttsInitialized = true;
+            console.log('TTS initialized for iOS');
+        } catch (error) {
+            console.warn('Failed to initialize TTS for iOS:', error);
+        }
+    }
+
     startPlayback() {
         if (!this.timings || this.timings.length === 0) {
             this.updateStatus('Error: No song loaded. Please select and load a song first');
@@ -452,9 +480,15 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
             }
         }
 
-        // Start text-to-speech if enabled
+        // Start text-to-speech if enabled (with iOS initialization)
         if (this.speechEnabled) {
-            this.startTextToSpeech();
+            if (this.isIOS) {
+                this.initializeTTSForIOS().then(() => {
+                    this.startTextToSpeech();
+                });
+            } else {
+                this.startTextToSpeech();
+            }
         }
 
         // Hide lyrics info and show lyrics container
@@ -559,7 +593,7 @@ class AssistedKaraokePlayer extends BaseKaraokePlayer {
         const maxConcurrentUtterances = this.isIOS ? 3 : 10; // iOS has stricter limits
         
         // Schedule each word to be spoken at the correct time
-        this.speechUtterances.forEach(({ utterance, timing }, index) => {
+        this.speechUtterances.forEach(({ utterance, timing }) => {
             // Calculate delay relative to current playback position
             const absoluteDelay = timing.startTime - (this.isIOS ? 200 : 100); // Start earlier on iOS
             const relativeDelay = absoluteDelay - currentTimeOffset;
